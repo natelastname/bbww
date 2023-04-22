@@ -1,11 +1,12 @@
-;;; better-backward-word.el --- summary -*- lexical-binding: t -*-
+;;; bbww.el --- Improved word-jumping functions -*- lexical-binding: t -*-
 
 ;; Author: Nathan Nichols
 ;; Maintainer: Nathan Nichols
 ;; Version: 1.0
-;; Package-Requires: mwim
+;; Package-Requires: ((mwim "1.0") (emacs "24.3"))
+
 ;; Homepage: http://chud.wtf
-;; Keywords: movement
+;; Keywords: convenience, files
 
 
 ;; This file is not part of GNU Emacs
@@ -63,41 +64,36 @@ Useful for killing blocks of whitespace that are within a single line."
   (interactive)
   (bbww-get-forward-region (- (or arg 1))))
 
-(defun get-curr-line ()
+(defun bbww-get-curr-line ()
   "Return current line as a string."
   (buffer-substring (line-beginning-position) (line-end-position)))
 
 (defun bbww-looking-bidi (regexp dir)
   (cond
    ((> dir 0) (looking-back regexp nil))
-   ((< dir 0) (looking-at regexp))
-   ))
+   ((< dir 0) (looking-at regexp))))
 
 (defun bbww-mwim-bidi (dir)
   (cond
    ((> dir 0) (mwim-end))
-   ((< dir 0) (mwim-beginning))
-   ))
+   ((< dir 0) (mwim-beginning))))
 
 (defun bbww-skip-chars-bidi (chars dir)
   (cond
      ((> 0 dir) (skip-chars-forward " \t\r\n\v\f"))
-     ((< 0 dir) (skip-chars-backward " \t\r\n\v\f"))
-     ))
+     ((< 0 dir) (skip-chars-backward " \t\r\n\v\f"))))
 
 (defun bbww-skip-whitespace-block (&optional arg)
   "Move point before whitespace."
   (let ((arg (or arg 1)))
-    (bbww-skip-chars-bidi " \t\r\n\v\f" arg)
-    ))
+    (bbww-skip-chars-bidi " \t\r\n\v\f" arg)))
 
 (defun bbww-walk-back-line (&optional arg)
   "Move to the mwim-end of the last non-whitespace line before current line."
   (forward-line (- arg))
   (bbww-mwim-bidi arg)
-  (if (string-match-p (get-curr-line) "\s+")
-      (bbww-skip-whitespace-block arg)
-    ))
+  (if (string-match-p (bbww-get-curr-line) "\s+")
+      (bbww-skip-whitespace-block arg)))
 
 (defun bbww-backward-word (&optional arg)
   "Make `backward-word' less greedy when moving across lines."
@@ -113,8 +109,7 @@ Useful for killing blocks of whitespace that are within a single line."
           ((string-match-p "\n" bw-region) (bbww-walk-back-line arg))
           ;; If here, just do backward word because the point will
           ;; stay within the same line as it started.
-          (t (backward-word arg))
-          ))
+          (t (backward-word arg))))
   (point))
 
 (defun bbww-forward-word (&optional arg)
@@ -155,33 +150,38 @@ Useful for killing blocks of whitespace that are within a single line."
 ;; mode which is active everywhere. The minor mode method is
 ;; preferable to changing the behavior of a built-in function.
 
+
+(defcustom bbww-mode-lighter " bbww"
+  "Command `editorconfig-mode' lighter string."
+  :type 'string
+  :group 'bbww)
+
 (defvar bbww-keymap (make-keymap)
-  "Keymap for bbww-mode.")
+  "Keymap for bbww-mode")
 
-(define-minor-mode bbww-mode
-  "Minor mode for better backward word (bbww.)"
-  :init-value t
-  :global t
-  :keymap bbww-keymap)
-
-;; The main bbww functions
 (define-key bbww-keymap (kbd "<C-left>") #'bbww-backward-word)
 (define-key bbww-keymap (kbd "<C-right>") #'bbww-forward-word)
 (define-key bbww-keymap (kbd "<C-backspace>") #'bbww-backward-kill-word)
-;; Sets something that is unset by default, so it has potential to
-;; conflict with other key bindings. For example, maybe some other
-;; package already uses M-DEL for something.
 (define-key bbww-keymap (kbd "M-DEL") #'bbww-kill-backward-whitespace)
 
-(defun bbww-init-bindings ()
-  "Set up recommended keybindings for `better-backward-word'."
-  (interactive)
+;;;###autoload
+(define-minor-mode bbww-mode
+  "Minor mode for better backward word (bbww.)"
+  :global t
+  :lighter bbww-mode-lighter
+  :keymap bbww-keymap
   ;; This basically makes bbww-keymap active everywhere.
   ;; The keymaps in `emulation-mode-map-alists' take precedence over
-  ;; `minor-mode-map-alist'
-  (add-to-list 'emulation-mode-map-alists
-               `((bbww-mode . ,bbww-keymap)))
+  ;; `minor-mode-map-alist', so can't be overriden by a minor mode.
+  (if bbww-mode
+      (add-to-list 'emulation-mode-map-alists `((bbww-mode . ,bbww-keymap)))
+    (delete `((bbww-mode . ,bbww-keymap)) emulation-mode-map-alists)))
 
+
+;;;###autoload
+(defun bbww-init-global-bindings ()
+  "Set up recommended keybindings."
+  (interactive)
   ;; Define in global key-map instead so that they'll be overwritten
   ;; by major mode For example, <M-left> and <M-right> are used by
   ;; org-mode, and we don't want to break org-mode unneccesarily.
@@ -190,9 +190,7 @@ Useful for killing blocks of whitespace that are within a single line."
   (define-key (current-global-map) (kbd "<M-up>") #'bbww-forward-line)
   (define-key (current-global-map) (kbd "<M-down>") #'bbww-backward-line)
   (define-key (current-global-map) (kbd "<M-left>") #'bbww-backward-word)
-  (define-key (current-global-map) (kbd "<M-right>") #'bbww-forward-word)
-  )
+  (define-key (current-global-map) (kbd "<M-right>") #'bbww-forward-word))
 
-
-(provide 'better-backward-word)
-;;; better-backward-word.el ends here
+(provide 'bbww)
+;;; bbww.el ends here
