@@ -18,7 +18,6 @@ The package [[https://github.com/alezost/mwim.el][MWIM]] is heavily used interna
   (global-set-key (kbd "C-e") 'mwim-end))
 
 (use-package bbww
-  :ensure nil
   :config
   (bbww-mode 1)
   (bbww-init-global-bindings))
