@@ -150,7 +150,6 @@ Useful for killing blocks of whitespace that are within a single line."
 ;; mode which is active everywhere. The minor mode method is
 ;; preferable to changing the behavior of a built-in function.
 
-
 (defcustom bbww-mode-lighter " bbww"
   "Command `editorconfig-mode' lighter string."
   :type 'string
@@ -170,13 +169,13 @@ Useful for killing blocks of whitespace that are within a single line."
   :global t
   :lighter bbww-mode-lighter
   :keymap bbww-keymap
+  :group bbww
   ;; This basically makes bbww-keymap active everywhere.
   ;; The keymaps in `emulation-mode-map-alists' take precedence over
   ;; `minor-mode-map-alist', so can't be overriden by a minor mode.
   (if bbww-mode
       (add-to-list 'emulation-mode-map-alists `((bbww-mode . ,bbww-keymap)))
     (delete `((bbww-mode . ,bbww-keymap)) emulation-mode-map-alists)))
-
 
 ;;;###autoload
 (defun bbww-init-global-bindings ()
