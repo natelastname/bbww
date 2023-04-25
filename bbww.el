@@ -49,18 +49,15 @@ Useful for killing blocks of whitespace that are within a single line."
   "Return the region between point before  `forward-word'.
 `ARG' is argument passed to `forward-word'."
   (interactive)
-  (let* (
-         (p1 (point))
-         ;; Note: backward-word is really a lisp wrapper around forward-word (which is a C function.)
-         (temp (forward-word arg))
-         (p2 (point))
-         (forward-region (buffer-substring-no-properties p1 p2)))
-    ;; backward-region = the region that we would have jumped over with backward-word
-    (goto-char p1)
-    forward-region))
+  (let ((p1 (point)))
+         (forward-word arg)
+         (let* ((p2 (point))
+                (forward-region (buffer-substring-no-properties p1 p2)))
+           (goto-char p1)
+           forward-region)))
 
 (defun bbww-get-backward-region (&optional arg)
-  "Return the region between point and where it would be after calling `backward-word' `ARG'."
+  "Return the region between point before/after calling `backward-word' `ARG'."
   (interactive)
   (bbww-get-forward-region (- (or arg 1))))
 
@@ -69,34 +66,39 @@ Useful for killing blocks of whitespace that are within a single line."
   (buffer-substring (line-beginning-position) (line-end-position)))
 
 (defun bbww-looking-bidi (regexp dir)
+  "Passes REGEXP to either `looking-at' or `looking-back' depending on DIR."
   (cond
    ((> dir 0) (looking-back regexp nil))
    ((< dir 0) (looking-at regexp))))
 
 (defun bbww-mwim-bidi (dir)
+  "Call either `mwim-end' or `mwim-beginning' depending on DIR."
   (cond
    ((> dir 0) (mwim-end))
    ((< dir 0) (mwim-beginning))))
 
 (defun bbww-skip-chars-bidi (chars dir)
+  "Passes CHARS to `skip-chars-forward' or `skip-chars-backward' depending on DIR."
   (cond
-     ((> 0 dir) (skip-chars-forward " \t\r\n\v\f"))
-     ((< 0 dir) (skip-chars-backward " \t\r\n\v\f"))))
+     ((> 0 dir) (skip-chars-forward chars))
+     ((< 0 dir) (skip-chars-backward chars))))
 
 (defun bbww-skip-whitespace-block (&optional arg)
-  "Move point before whitespace."
+  "Passes ARG to `bbww-skip-chars-bidi' if provided."
   (let ((arg (or arg 1)))
     (bbww-skip-chars-bidi " \t\r\n\v\f" arg)))
 
 (defun bbww-walk-back-line (&optional arg)
-  "Move to the mwim-end of the last non-whitespace line before current line."
+  "Move to the mwim-end of the last non-whitespace line before current line.
+ARG specifies the direction."
   (forward-line (- arg))
   (bbww-mwim-bidi arg)
   (if (string-match-p (bbww-get-curr-line) "\s+")
       (bbww-skip-whitespace-block arg)))
 
 (defun bbww-backward-word (&optional arg)
-  "Make `backward-word' less greedy when moving across lines."
+  "Make `backward-word' less greedy when moving across lines.
+ARG specificies direction."
   (interactive "^p") ;; ^ = handle marker/region correctly
   (let* (
          (arg (or arg 1))
@@ -113,8 +115,11 @@ Useful for killing blocks of whitespace that are within a single line."
   (point))
 
 (defun bbww-forward-word (&optional arg)
+  "A less greedy version of `forward-word'.
+ARG is passed to `bbww-backward-word' if provided."
   (interactive "^") ;; ^ = handle marker/region correctly
-  (bbww-backward-word -1))
+  (let ((arg (or arg -1)))
+    (bbww-backward-word arg)))
 
 ;;
 
@@ -122,17 +127,21 @@ Useful for killing blocks of whitespace that are within a single line."
 ;; TEST CASE: put point on the above "!" and do bbww-backward-word. See if it works correctly.
 
 (defun bbww-backward-kill-word (arg)
-  "Like `backward-kill-word' but less greedy."
+  "Like `backward-kill-word' but less greedy.
+ARG is passed to `bbww-backward-word' if provided."
   (interactive "*p")
-  (delete-region (point)
-                 (bbww-backward-word)))
+  (let ((arg (or arg 1)))
+    (delete-region (point)
+                   (bbww-backward-word arg))))
 
 (defun bbww-forward-line ()
+  "Move forward one line and then call `mwim-end'."
   (interactive "^")
   (forward-line -1)
   (mwim-end))
 
 (defun bbww-backward-line ()
+  "Move backward one line and then call `mwim-end'."
   (interactive "^")
   (forward-line 1)
   (mwim-end))
@@ -169,7 +178,7 @@ Useful for killing blocks of whitespace that are within a single line."
   :global t
   :lighter bbww-mode-lighter
   :keymap bbww-keymap
-  :group bbww
+  :group 'bbww
   ;; This basically makes bbww-keymap active everywhere.
   ;; The keymaps in `emulation-mode-map-alists' take precedence over
   ;; `minor-mode-map-alist', so can't be overriden by a minor mode.
