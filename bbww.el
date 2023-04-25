@@ -164,13 +164,12 @@ ARG is passed to `bbww-backward-word' if provided."
   :type 'string
   :group 'bbww)
 
-(defvar bbww-keymap (make-keymap)
-  "Keymap for bbww-mode")
-
-(define-key bbww-keymap (kbd "<C-left>") #'bbww-backward-word)
-(define-key bbww-keymap (kbd "<C-right>") #'bbww-forward-word)
-(define-key bbww-keymap (kbd "<C-backspace>") #'bbww-backward-kill-word)
-(define-key bbww-keymap (kbd "M-DEL") #'bbww-kill-backward-whitespace)
+(defvar bbww-keymap (let ((km (make-keymap)))
+                 (define-key km (kbd "<C-left>") #'bbww-backward-word)
+                 (define-key km (kbd "<C-right>") #'bbww-forward-word)
+                 (define-key km (kbd "<C-backspace>") #'bbww-backward-kill-word)
+                 (define-key km (kbd "M-DEL") #'bbww-kill-backward-whitespace)
+                 km))
 
 ;;;###autoload
 (define-minor-mode bbww-mode
