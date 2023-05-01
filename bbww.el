@@ -89,7 +89,7 @@ Useful for killing blocks of whitespace that are within a single line."
     (bbww-skip-chars-bidi " \t\r\n\v\f" arg)))
 
 (defun bbww-walk-back-line (&optional arg)
-  "Move to the mwim-end of the last non-whitespace line before current line.
+  "Move to the `mwim-end' of the last non-whitespace line before current line.
 ARG specifies the direction."
   (forward-line (- arg))
   (bbww-mwim-bidi arg)
@@ -173,7 +173,7 @@ ARG is passed to `bbww-backward-word' if provided."
 
 ;;;###autoload
 (define-minor-mode bbww-mode
-  "Minor mode for better backward word (bbww.)"
+  "Minor mode for better backward word (bbww)."
   :global t
   :lighter bbww-mode-lighter
   :keymap bbww-keymap
