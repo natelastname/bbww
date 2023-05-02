@@ -1,5 +1,5 @@
 # -*- mode: org -*-
-#+TITLE: better-backward-word
+#+TITLE: bbww
 #+AUTHOR: nate
 #+DATE: <2023-04-21>
 
