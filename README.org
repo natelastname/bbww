@@ -3,7 +3,7 @@
 #+AUTHOR: nate
 #+DATE: <2023-04-21>
 
-=better-backward-word= is an Emacs package that provides alternatives to the basic built-in text editing commands =forward-word=, =backward-word=, =backward-kill-word= and =forward-kill-word=. These alternative implementations are generally less greedy, especially when the forward/backward region contains a newline.
+=bbww= (Better BackWard Word) is an Emacs package that provides alternatives to the basic built-in text editing commands =forward-word=, =backward-word=, =backward-kill-word= and =forward-kill-word=. These alternative implementations are generally less greedy, especially when the forward/backward region contains a newline.
 
 The purpose of =better-backward-word= is to overhaul the default Emacs text editing functionality in a way that comes natural for users who are used to "normal" modern text editors.
 

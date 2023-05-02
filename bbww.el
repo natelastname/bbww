@@ -31,7 +31,7 @@
 ;; `backward-kill-word', `forward-kill-word' that are generally less
 ;; greedy, especially when the backward region contains a newline.
 
-;; commentary
+;; See README.org for information on installation and configuration.
 
 ;;; Code:
 
